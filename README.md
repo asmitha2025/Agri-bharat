@@ -178,3 +178,53 @@ AgriBot is a voice-first AI platform that farmers access via a simple phone call
     ```bash
     npx expo start
     ```
+
+---
+
+## 📖 How to Use
+
+### 1. Interacting with the Web Dashboard
+*   **Administrator Login:**
+    *   Navigate to the login page (`http://localhost:5173/login`).
+    *   If Firebase is not configured (running in Local/Mock mode), log in using the fallback administrator credentials:
+        *   **Email:** `admin@agriweb.com`
+        *   **Password:** `Agri@2024`
+*   **Monitoring Regional Cultivation:**
+    *   The **Dashboard** tab displays aggregated figures (registered farmers, active alerts, call logs, and land size).
+    *   The bar charts and progress bars visualize the crop volume and regional farmer distribution across Tamil Nadu districts.
+*   **Registering & Editing Farmer Profiles:**
+    *   Go to the **Farmers** tab to view the list of registered farmers.
+    *   Click on a farmer's name to view their complete dossier (soil type, irrigation, history). Click **Edit Profile** to change details or click **Schemes** to link them to relevant subsidies.
+*   **Testing AI Pest & Crop Disease Diagnosis:**
+    *   Go to the **Pest Control** tab.
+    *   Select a crop type (e.g., *Tomato*) or choose *Auto-Detect*.
+    *   Upload an image of a diseased crop leaf (or click **Live Camera** on a mobile device).
+    *   Click **Run AI Disease Detection**. AgriBot will query Gemini/Llama vision models and output a detailed classification, severity rating, and immediate treatment guidelines (chemical + organic).
+    *   Enter a farmer's phone number and click **Save Diagnosis** to add it to the historical diagnosis registry.
+*   **Checking Market Rates:**
+    *   Go to the **Market Prices** tab.
+    *   View daily rates for crops like Rice, Wheat, Cotton, and Sugarcane.
+    *   Click the **Chart** icon next to any crop to open a modal containing historical 30-day price trend lines.
+
+### 2. Simulating the Voice Call Backend (`agri-call`)
+The Python backend uses Twilio to manage voice calls via TwiML.
+*   **Local Setup with Ngrok:**
+    *   To receive real calls on a Twilio phone number, expose your local Flask server (running on port `5000` by default) using Ngrok:
+        ```bash
+        ngrok http 5000
+        ```
+    *   Copy the forwarding URL (e.g., `https://xxxx.ngrok-free.dev`) and set it as `NGROK_URL` in your `agri-call/.env` file.
+    *   In your Twilio console, configure your phone number's incoming voice webhook to point to `https://xxxx.ngrok-free.dev/voice`.
+*   **Testing Query Intent Flow:**
+    *   Call your Twilio number. The voice agent (Dr. AgriAI) will welcome you in Tamil (or English/Hindi/Telugu based on your choice) and ask how it can help.
+    *   **Speak a query:**
+        *   *“மழை எப்போது பெய்யும்?”* (When will it rain?) ➔ Triggers weather engine intent, retrieves IMD/Visual Crossing forecasts, and synthesizes speech warning.
+        *   *“நெல்லின் விலை என்ன?”* (What is the price of Rice?) ➔ Triggers eNAM pricing database, queries daily averages, and reports rates.
+        *   *“எனது தக்காளி செடியில் இலைகள் கருகுகின்றன”* (Tomato leaves are burning) ➔ Triggers disease identification recommendations.
+*   **Distributor Call Transfer:**
+    *   If you ask to connect to a distributor or buyer to sell your yield, the agent checks your crop type and state, looks up the local buyer's number in `sms_transfer.py`, says a confirmation message, and dials the number to transfer the call.
+    *   An SMS summary of the call is compiled using Groq Llama-3.3 and texted to your phone.
+
+### 3. Testing the Mobile Companion App (`agriweb-mobile`)
+*   Open **Expo Go** on your physical iOS/Android phone and scan the QR code displayed in your terminal.
+*   Use the interface to search the **Farmer Directory**, view contact lists, look up current market price graphs, read government schemes, and update profile fields.
